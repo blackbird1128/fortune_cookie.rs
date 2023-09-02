@@ -50,9 +50,11 @@ fn main() {
     }
 
     re.captures_iter(&files).for_each(|cap| {
-        cap.get(2).map_or_else(
+        cap.get(1).map_or_else(
             || println!("No percentage"),
-            |m| println!("Percentage: {}", m.as_str()),
+            |m| {
+                println!("Percentage: {}", m.as_str());
+            },
         );
     });
     println!();
