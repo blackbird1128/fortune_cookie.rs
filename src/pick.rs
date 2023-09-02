@@ -2,18 +2,20 @@ use std::process::exit;
 
 use crate::file_utils::{self, FileContribution};
 
-pub fn pick_line_from_files_uniform(files: Vec<String>) -> String {
+pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<String, String> {
     let mut fortunes = Vec::new();
-    for file in files {
+    for file in &files {
         match file_utils::get_fortunes_from_file(&file) {
             Ok(e) => fortunes.extend(e),
             Err(error) => {
-                println!("{error}");
-                exit(1);
+                return Err(error);
             }
         }
     }
-    return fortunes[fastrand::usize(0..fortunes.len())].clone();
+    if files.len() == 0 {
+        return Err(String::from("No fortune files found"));
+    }
+    return Ok(fortunes[fastrand::usize(0..fortunes.len())].clone());
 }
 
 pub fn pick_line_from_file_contributions(contributions: Vec<FileContribution>) -> String {

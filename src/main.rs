@@ -74,9 +74,11 @@ fn main() {
         check_fortunes_folders_exist(&DEFAULT_FOLDERS);
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
         match pick::pick_line_from_files_uniform(fortune_files) {
-            Ok(x) => println!("{}", x),
-            Err(x) => {
-                println!("Error: {}", x);
+            Ok(x) => {
+                println!("{}", x)
+            }
+            Err(error) => {
+                println!("Error: {}", error);
                 exit(1);
             }
         }
