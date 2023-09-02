@@ -1,9 +1,11 @@
+mod file_utils;
 mod fortune;
+mod percentage;
+mod pick;
 
 use clap::Parser;
 use regex::Regex;
 use std::process::exit;
-use walkdir::WalkDir;
 
 #[derive(Parser)]
 #[command(about = "Yet another fortune clone")]
@@ -45,33 +47,23 @@ struct Args {
     files: Option<Vec<String>>,
 }
 
-fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
-    let mut files: Vec<String> = Vec::new();
-    for folder in vec_folders {
-        for file in WalkDir::new(folder)
-            .into_iter()
-            .filter_map(|file| file.ok())
-        {
-            if file.metadata().unwrap().is_file() {
-                files.push(file.path().to_str().unwrap().to_owned());
-            }
-        }
-    }
-    files
-}
-
 fn main() {
     let cli = Args::parse();
     const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
-
     if cli.file {
-        for file in get_fortune_files(&DEFAULT_FOLDERS) {
+        for file in file_utils::get_fortune_files(&DEFAULT_FOLDERS) {
             println!("{file}");
         }
         exit(0);
     }
-
     let files = cli.files.unwrap_or(vec!["".to_owned()]).join(" ");
+
+    if files.trim().len() == 0 {
+        // no files specified
+        let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
+        println!("{}", pick::pick_line_from_files_uniform(fortune_files));
+        exit(0);
+    }
 
     println!("files:{files}");
 
@@ -80,16 +72,7 @@ fn main() {
         println!("Error: files path must respect this format: [[n%] file/dir/all]");
     }
 
-    re.captures_iter(&files).for_each(|cap| {
-        cap.get(1).map_or_else(
-            || println!("No percentage"),
-            |m| {
-                println!("Percentage: {}", m.as_str());
-            },
-        );
-    });
     println!();
-
     println!("all: {}", cli.all);
     println!("cookie:  {:?}", cli.cookie);
 }
