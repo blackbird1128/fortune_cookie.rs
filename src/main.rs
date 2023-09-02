@@ -5,6 +5,7 @@ mod pick;
 
 use clap::Parser;
 use regex::Regex;
+use std::path::Path;
 use std::process::exit;
 
 #[derive(Parser)]
@@ -47,10 +48,20 @@ struct Args {
     files: Option<Vec<String>>,
 }
 
+fn check_fortunes_folders_exist(paths: &[&str]) {
+    for path in paths {
+        if !Path::new(path).exists() {
+            println!("Error: folder {} does not exist (default folder)", path);
+            exit(1);
+        }
+    }
+}
+
 fn main() {
     let cli = Args::parse();
     const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
     if cli.file {
+        // -f
         for file in file_utils::get_fortune_files(&DEFAULT_FOLDERS) {
             println!("{file}");
         }
@@ -60,6 +71,7 @@ fn main() {
 
     if files.trim().len() == 0 {
         // no files specified
+        check_fortunes_folders_exist(&DEFAULT_FOLDERS);
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
         println!("{}", pick::pick_line_from_files_uniform(fortune_files));
         exit(0);
@@ -70,7 +82,13 @@ fn main() {
             exit(1);
         }
 
-        let fortune_files = file_utils::file_args_to_file_contribution(&files);
+        let fortune_files = match file_utils::file_args_to_file_contribution(&files) {
+            Ok(x) => x,
+            Err(x) => {
+                println!("Error: {}", x);
+                exit(1);
+            }
+        };
         println!("{}", pick::pick_line_from_file_contributions(fortune_files));
         exit(0);
     }

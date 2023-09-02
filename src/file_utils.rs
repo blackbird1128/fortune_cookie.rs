@@ -33,7 +33,7 @@ pub fn get_fortunes_from_file(file_path: &str) -> Result<Vec<String>, String> {
     }
 }
 
-pub fn file_args_to_file_contribution(args: &str) -> Vec<FileContribution> {
+pub fn file_args_to_file_contribution(args: &str) -> Result<Vec<FileContribution>, String> {
     let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").unwrap();
     let mut file_structs: Vec<FileContribution> = Vec::new();
     re.captures_iter(&args).for_each(|cap| {
@@ -50,8 +50,11 @@ pub fn file_args_to_file_contribution(args: &str) -> Vec<FileContribution> {
         };
         file_structs.push(cur_struct);
     });
-    percentage::fill_contributions(&mut file_structs);
-    file_structs
+    match percentage::fill_contributions(&mut file_structs) {
+        Ok(_) => {}
+        Err(x) => return Err(x),
+    }
+    Ok(file_structs)
 }
 
 #[cfg(test)]
@@ -71,7 +74,10 @@ mod tests {
                 percentage: 50u8,
             },
         ];
-        assert_eq!(file_args_to_file_contribution(args), predicted_result);
+        assert_eq!(
+            file_args_to_file_contribution(args).unwrap(),
+            predicted_result
+        );
     }
 
     #[test]
@@ -88,7 +94,10 @@ mod tests {
                 percentage: 50u8,
             },
         ];
-        assert_eq!(file_args_to_file_contribution(args), predicted_result);
+        assert_eq!(
+            file_args_to_file_contribution(args).unwrap(),
+            predicted_result
+        );
     }
 
     #[test]
@@ -105,7 +114,10 @@ mod tests {
                 percentage: 25u8,
             },
         ];
-        assert_eq!(file_args_to_file_contribution(args), predicted_result);
+        assert_eq!(
+            file_args_to_file_contribution(args).unwrap(),
+            predicted_result
+        );
     }
 
     #[test]
@@ -127,6 +139,9 @@ mod tests {
             },
         ];
 
-        assert_eq!(file_args_to_file_contribution(args), predicted_result);
+        assert_eq!(
+            file_args_to_file_contribution(args).unwrap(),
+            predicted_result
+        );
     }
 }
