@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use crate::file_utils::{self, FileContribution};
 
 pub fn pick_line_from_files_uniform(files: Vec<String>) -> String {
@@ -5,7 +7,10 @@ pub fn pick_line_from_files_uniform(files: Vec<String>) -> String {
     for file in files {
         match file_utils::get_fortunes_from_file(&file) {
             Ok(e) => fortunes.extend(e),
-            Err(error) => println!("{error}"),
+            Err(error) => {
+                println!("{error}");
+                exit(1);
+            }
         }
     }
     return fortunes[fastrand::usize(0..fortunes.len())].clone();

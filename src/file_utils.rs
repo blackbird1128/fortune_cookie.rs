@@ -11,6 +11,11 @@ pub struct FileContribution {
     pub percentage: u8,
 }
 
+pub struct FortuneResult {
+    pub fortune: String,
+    pub file_path: String,
+}
+
 pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
     let mut files: Vec<String> = Vec::new();
     for folder in vec_folders {

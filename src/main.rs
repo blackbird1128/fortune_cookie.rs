@@ -73,10 +73,16 @@ fn main() {
         // no files specified
         check_fortunes_folders_exist(&DEFAULT_FOLDERS);
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-        println!("{}", pick::pick_line_from_files_uniform(fortune_files));
+        match pick::pick_line_from_files_uniform(fortune_files) {
+            Ok(x) => println!("{}", x),
+            Err(x) => {
+                println!("Error: {}", x);
+                exit(1);
+            }
+        }
         exit(0);
     } else {
-        let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").unwrap();
+        let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").expect("Error: invalid regex");
         if !re.is_match(&files) {
             println!("Error: files path must respect this format: [[n%] file/dir/all]");
             exit(1);
