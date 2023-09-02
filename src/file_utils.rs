@@ -21,9 +21,6 @@ pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
             if file.metadata().unwrap().is_file() {
                 files.push(file.path().to_str().unwrap().to_owned());
             }
-            if file.metadata().unwrap().is_dir() {
-                files.append(&mut get_fortune_files(&[file.path().to_str().unwrap()]));
-            }
         }
     }
     files
