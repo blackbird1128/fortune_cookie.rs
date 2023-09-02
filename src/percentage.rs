@@ -10,17 +10,25 @@ pub fn fill_contributions(contributions: &mut Vec<FileContribution>) {
     if percentage_sum > 100 {
         panic!("Percents in the file contribution vec sum up to x > 100 ");
     }
-    let to_fill = unset_count;
-    let rest: i32 = (100 - percentage_sum) as i32;
-    let mut fill = 0;
-    if rest % to_fill as i32 != 0 {
-        fill += 1
+    if unset_count == 0 && percentage_sum == 100 {
+        return;
+    } else if unset_count == 0 && percentage_sum != 100 {
+        panic!("Percents in the file contribution vec sum up to x != 100 : Not fixable");
     }
-    let fill = rest / to_fill as i32 + fill;
-    contributions
-        .iter_mut()
-        .filter(|x| x.percentage == 0)
-        .for_each(|x| x.percentage = fill as u8);
+    let percentage_left = 100 - percentage_sum;
+
+    if unset_count == 0 {
+    } else {
+        let rest = percentage_left % unset_count as u8;
+        for i in 0..len {
+            if contributions[i].percentage == 0 {
+                contributions[i].percentage = (100 - percentage_sum) / unset_count as u8;
+                if i == len - 1 {
+                    contributions[i].percentage += rest;
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]

@@ -12,5 +12,18 @@ pub fn pick_line_from_files_uniform(files: Vec<String>) -> String {
 }
 
 pub fn pick_line_from_file_contributions(contributions: Vec<FileContribution>) -> String {
-    return "TODO".to_owned();
+    let mut pick_array: [u8; 100] = [0; 100];
+    let mut cur_index = 0;
+    for i in 0..contributions.len() {
+        for j in cur_index..(cur_index + contributions[i].percentage) {
+            pick_array[j as usize] = i as u8;
+            cur_index += 1;
+        }
+    }
+    let pick = pick_array[fastrand::usize(0..100)];
+    match file_utils::get_fortunes_from_file(&contributions[pick as usize].file_path) {
+        Ok(e) => return e[fastrand::usize(0..e.len())].clone(),
+        Err(error) => println!("{error}"),
+    }
+    return String::from("");
 }

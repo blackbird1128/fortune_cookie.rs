@@ -58,21 +58,19 @@ fn main() {
     }
     let files = cli.files.unwrap_or(vec!["".to_owned()]).join(" ");
 
-    if files.trim().len() == 0 {
-        // no files specified
-        let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-        println!("{}", pick::pick_line_from_files_uniform(fortune_files));
-        exit(0);
-    }
-
-    println!("files:{files}");
-
     let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").unwrap();
     if !re.is_match(&files) {
         println!("Error: files path must respect this format: [[n%] file/dir/all]");
     }
 
-    println!();
-    println!("all: {}", cli.all);
-    println!("cookie:  {:?}", cli.cookie);
+    if files.trim().len() == 0 {
+        // no files specified
+        let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
+        println!("{}", pick::pick_line_from_files_uniform(fortune_files));
+        exit(0);
+    } else {
+        let fortune_files = file_utils::file_args_to_file_contribution(&files);
+        println!("{}", pick::pick_line_from_file_contributions(fortune_files));
+        exit(0);
+    }
 }

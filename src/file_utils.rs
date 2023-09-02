@@ -96,16 +96,16 @@ mod tests {
 
     #[test]
     fn test_file_args_parse3() {
-        let args = "75% f1";
+        let args = "75% f1 f2";
 
         let predicted_result = vec![
             FileContribution {
                 file_path: "f1".to_owned(),
-                percentage: 50u8,
+                percentage: 75u8,
             },
             FileContribution {
                 file_path: "f2".to_owned(),
-                percentage: 50u8,
+                percentage: 25u8,
             },
         ];
         assert_eq!(file_args_to_file_contribution(args), predicted_result);
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn test_file_args_parse4() {
-        let args = "f1 f2 f32";
+        let args = "f1 f2 f3";
 
         let predicted_result = vec![
             FileContribution {
