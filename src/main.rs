@@ -1,5 +1,9 @@
+mod fortune;
+
 use clap::Parser;
 use regex::Regex;
+use std::process::exit;
+use walkdir::WalkDir;
 
 #[derive(Parser)]
 #[command(about = "Yet another fortune clone")]
@@ -38,12 +42,39 @@ struct Args {
     wait: bool,
 
     #[arg()]
-    files: String,
+    files: Option<Vec<String>>,
+}
+
+fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
+    let mut files: Vec<String> = Vec::new();
+    for folder in vec_folders {
+        for file in WalkDir::new(folder)
+            .into_iter()
+            .filter_map(|file| file.ok())
+        {
+            if file.metadata().unwrap().is_file() {
+                files.push(file.path().to_str().unwrap().to_owned());
+            }
+        }
+    }
+    files
 }
 
 fn main() {
     let cli = Args::parse();
-    let files: String = cli.files;
+    const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
+
+    if cli.file {
+        for file in get_fortune_files(&DEFAULT_FOLDERS) {
+            println!("{file}");
+        }
+        exit(0);
+    }
+
+    let files = cli.files.unwrap_or(vec!["".to_owned()]).join(" ");
+
+    println!("files:{files}");
+
     let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").unwrap();
     if !re.is_match(&files) {
         println!("Error: files path must respect this format: [[n%] file/dir/all]");
@@ -60,6 +91,5 @@ fn main() {
     println!();
 
     println!("all: {}", cli.all);
-    println!("files: {}", files);
     println!("cookie:  {:?}", cli.cookie);
 }
