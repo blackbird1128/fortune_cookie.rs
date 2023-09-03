@@ -78,14 +78,14 @@ fn main() {
                 if cli.cookie {
                     println!("({})\n%", fortune_result.file_path);
                 }
-                println!("{}", fortune_result.fortune);
+                fortune::print_and_delay_size(&fortune_result.fortune, cli.wait);
+                exit(0);
             }
             Err(error) => {
                 println!("Error: {}", error);
                 exit(1);
             }
         }
-        exit(0);
     } else {
         let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").expect("Error: invalid regex");
         if !re.is_match(&files) {
@@ -105,7 +105,7 @@ fn main() {
         if cli.cookie {
             println!("({})\n%", fortune_result.file_path);
         }
-        println!("{}", fortune_result.fortune);
+        fortune::print_and_delay_size(&fortune_result.fortune, cli.wait);
         exit(0);
     }
 }

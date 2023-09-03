@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use crate::file_utils::{self, FileContribution, FortuneResult};
 
 pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<FortuneResult, String> {
