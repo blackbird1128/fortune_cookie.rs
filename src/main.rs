@@ -4,9 +4,9 @@ mod fortune;
 mod percentage;
 mod pick;
 
-use clap::Parser;
-use regex::Regex;
 use std::process::exit;
+
+use clap::Parser;
 
 #[derive(Parser)]
 #[command(about = "Yet another fortune clone")]
@@ -52,7 +52,17 @@ fn main() {
     let args = Args::parse();
 
     cli::handle_file_arg(&args);
-    cli::handle_pattern_arg(&args);
+    let pattern_result = cli::handle_pattern_arg(&args);
+    if pattern_result.is_some() {
+        let mut pattern_result = pattern_result.unwrap();
+        let pattern_str = pattern_result
+            .iter_mut()
+            .map(|x| x.fortune.clone())
+            .collect::<Vec<String>>()
+            .join("\n%\n");
+        println!("{}", pattern_str);
+        exit(0);
+    }
 
     let files = args.files.clone().unwrap_or(vec!["".to_owned()]).join(" ");
 
@@ -60,25 +70,6 @@ fn main() {
         cli::handle_zero_file_arg(&args);
         // no files specified
     } else {
-        let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").expect("Error: invalid regex");
-        if !re.is_match(&files) {
-            println!("Error: files path must respect this format: [[n%] file/dir/all]");
-            exit(1);
-        }
-
-        let fortune_files = match file_utils::file_args_to_file_contribution(&files) {
-            Ok(x) => x,
-            Err(x) => {
-                println!("Error: {}", x);
-                exit(1);
-            }
-        };
-
-        let fortune_result = pick::pick_line_from_file_contributions(fortune_files);
-        if args.cookie {
-            println!("({})\n%", fortune_result.file_path);
-        }
-        fortune::print_and_delay_size(&fortune_result.fortune, args.wait);
-        exit(0);
+        cli::handle_multiplie_files_arg(&args, &files);
     }
 }

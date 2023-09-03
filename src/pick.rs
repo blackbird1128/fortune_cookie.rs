@@ -1,5 +1,18 @@
 use crate::file_utils::{self, FileContribution, FortuneResult};
 
+pub fn pick_all_from_files(files: Vec<String>) -> Result<Vec<FortuneResult>, String> {
+    let mut fortunes = Vec::new();
+    for file in &files {
+        match file_utils::get_fortunes_from_file(&file) {
+            Ok(e) => fortunes.extend(e),
+            Err(error) => {
+                return Err(error);
+            }
+        }
+    }
+    Ok(fortunes)
+}
+
 pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<FortuneResult, String> {
     let mut fortunes = Vec::new();
     for file in &files {
