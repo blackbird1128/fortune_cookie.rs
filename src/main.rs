@@ -1,3 +1,4 @@
+mod cli;
 mod file_utils;
 mod fortune;
 mod percentage;
@@ -5,12 +6,11 @@ mod pick;
 
 use clap::Parser;
 use regex::Regex;
-use std::path::Path;
 use std::process::exit;
 
 #[derive(Parser)]
 #[command(about = "Yet another fortune clone")]
-struct Args {
+pub struct Args {
     #[arg(short, long)]
     all: bool,
 
@@ -48,51 +48,17 @@ struct Args {
     files: Option<Vec<String>>,
 }
 
-fn check_fortunes_folders_exist(paths: &[&str]) {
-    for path in paths {
-        if !Path::new(path).exists() {
-            println!("Error: folder {} does not exist (default folder)", path);
-            exit(1);
-        }
-    }
-}
-
 fn main() {
-    let cli = Args::parse();
-    const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
+    let args = Args::parse();
 
-    if cli.ignore && !cli.pattern.is_some() {
-        // -i without -m
-        println!("The -i option can only be used with -m");
-        exit(1);
-    }
+    cli::handle_file_arg(&args);
+    cli::handle_pattern_arg(&args);
 
-    if cli.file {
-        // -f
-        for file in file_utils::get_fortune_files(&DEFAULT_FOLDERS) {
-            println!("{file}");
-        }
-        exit(0);
-    }
-    let files = cli.files.unwrap_or(vec!["".to_owned()]).join(" ");
+    let files = args.files.clone().unwrap_or(vec!["".to_owned()]).join(" ");
 
     if files.trim().len() == 0 {
+        cli::handle_zero_file_arg(&args);
         // no files specified
-        check_fortunes_folders_exist(&DEFAULT_FOLDERS);
-        let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-        match pick::pick_line_from_files_uniform(fortune_files) {
-            Ok(fortune_result) => {
-                if cli.cookie {
-                    println!("({})\n%", fortune_result.file_path);
-                }
-                fortune::print_and_delay_size(&fortune_result.fortune, cli.wait);
-                exit(0);
-            }
-            Err(error) => {
-                println!("Error: {}", error);
-                exit(1);
-            }
-        }
     } else {
         let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").expect("Error: invalid regex");
         if !re.is_match(&files) {
@@ -109,10 +75,10 @@ fn main() {
         };
 
         let fortune_result = pick::pick_line_from_file_contributions(fortune_files);
-        if cli.cookie {
+        if args.cookie {
             println!("({})\n%", fortune_result.file_path);
         }
-        fortune::print_and_delay_size(&fortune_result.fortune, cli.wait);
+        fortune::print_and_delay_size(&fortune_result.fortune, args.wait);
         exit(0);
     }
 }
