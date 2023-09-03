@@ -11,6 +11,7 @@ pub struct FileContribution {
     pub percentage: u8,
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct FortuneResult {
     pub fortune: String,
     pub file_path: String,
@@ -30,10 +31,10 @@ pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
     }
     files
 }
-pub fn get_fortunes_from_file(file_path: &str) -> Result<Vec<String>, String> {
+pub fn get_fortunes_from_file(file_path: &str) -> Result<Vec<FortuneResult>, String> {
     let file_contents = fs::read_to_string(file_path);
     match file_contents {
-        Ok(x) => Ok(fortune::parse_fortune_string(&x)),
+        Ok(x) => Ok(fortune::parse_fortune_string(&x, &file_path)),
         Err(_) => Err(format!("File not found: {}", file_path)),
     }
 }

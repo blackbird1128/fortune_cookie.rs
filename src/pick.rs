@@ -1,8 +1,8 @@
 use std::process::exit;
 
-use crate::file_utils::{self, FileContribution};
+use crate::file_utils::{self, FileContribution, FortuneResult};
 
-pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<String, String> {
+pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<FortuneResult, String> {
     let mut fortunes = Vec::new();
     for file in &files {
         match file_utils::get_fortunes_from_file(&file) {
@@ -18,7 +18,7 @@ pub fn pick_line_from_files_uniform(files: Vec<String>) -> Result<String, String
     return Ok(fortunes[fastrand::usize(0..fortunes.len())].clone());
 }
 
-pub fn pick_line_from_file_contributions(contributions: Vec<FileContribution>) -> String {
+pub fn pick_line_from_file_contributions(contributions: Vec<FileContribution>) -> FortuneResult {
     let mut pick_array: [u8; 100] = [0; 100];
     let mut cur_index = 0;
     for i in 0..contributions.len() {
@@ -32,5 +32,8 @@ pub fn pick_line_from_file_contributions(contributions: Vec<FileContribution>) -
         Ok(e) => return e[fastrand::usize(0..e.len())].clone(),
         Err(error) => println!("{error}"),
     }
-    return String::from("");
+    return FortuneResult {
+        fortune: String::from(""),
+        file_path: String::from(""),
+    };
 }

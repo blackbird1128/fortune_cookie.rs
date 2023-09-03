@@ -74,8 +74,11 @@ fn main() {
         check_fortunes_folders_exist(&DEFAULT_FOLDERS);
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
         match pick::pick_line_from_files_uniform(fortune_files) {
-            Ok(x) => {
-                println!("{}", x)
+            Ok(fortune_result) => {
+                if cli.cookie {
+                    println!("({})\n%", fortune_result.file_path);
+                }
+                println!("{}", fortune_result.fortune);
             }
             Err(error) => {
                 println!("Error: {}", error);
@@ -97,7 +100,12 @@ fn main() {
                 exit(1);
             }
         };
-        println!("{}", pick::pick_line_from_file_contributions(fortune_files));
+
+        let fortune_result = pick::pick_line_from_file_contributions(fortune_files);
+        if cli.cookie {
+            println!("({})\n%", fortune_result.file_path);
+        }
+        println!("{}", fortune_result.fortune);
         exit(0);
     }
 }
