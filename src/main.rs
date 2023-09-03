@@ -60,6 +60,13 @@ fn check_fortunes_folders_exist(paths: &[&str]) {
 fn main() {
     let cli = Args::parse();
     const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
+
+    if cli.ignore && !cli.pattern.is_some() {
+        // -i without -m
+        println!("The -i option can only be used with -m");
+        exit(1);
+    }
+
     if cli.file {
         // -f
         for file in file_utils::get_fortune_files(&DEFAULT_FOLDERS) {
