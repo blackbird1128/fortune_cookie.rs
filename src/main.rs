@@ -30,7 +30,7 @@ pub struct Args {
     pattern: Option<String>,
 
     #[arg(short = 'n', long = "length")]
-    length: Option<i32>,
+    length: Option<u32>,
 
     #[arg(short, long)]
     offensive: bool,

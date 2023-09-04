@@ -2,6 +2,9 @@ use crate::file_utils;
 use crate::file_utils::FortuneResult;
 use crate::fortune;
 use crate::pick;
+use crate::pick::FilterFile;
+use crate::pick::FilterLen;
+use crate::pick::FortuneFilter;
 use crate::Args;
 use regex::Regex;
 use std::path::Path;
@@ -28,6 +31,27 @@ pub fn handle_file_arg(args: &Args) {
     }
 }
 
+pub fn produce_filter_from_args(args: &Args) -> FortuneFilter {
+    let mut filter = FortuneFilter {
+        file: FilterFile::All,
+        len: FilterLen::Short,
+        len_value: 160,
+    };
+    if args.offensive {
+        filter.file = FilterFile::Offensive;
+    }
+    if args.long {
+        filter.len = FilterLen::Long;
+    }
+    if args.short {
+        filter.len = FilterLen::Short;
+    }
+    if args.length.is_some() {
+        filter.len_value = args.length.unwrap();
+    }
+    filter
+}
+
 pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
     if args.ignore && !args.pattern.is_some() {
         // -i without -m
@@ -36,7 +60,7 @@ pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
     }
     if args.pattern.is_some() {
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-        let pattern: String = args.pattern.as_ref().unwrap().to_string();
+        let pattern = args.pattern.as_ref().unwrap().to_string();
         let lines = pick::pick_all_from_files(fortune_files).unwrap_or_else(|_| {
             println!("Error: no fortune files found");
             exit(1);
@@ -59,7 +83,9 @@ pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
 pub fn handle_zero_file_arg(args: &Args) {
     check_fortunes_folders_exist(&DEFAULT_FOLDERS);
     let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-    match pick::pick_line_from_files_uniform(fortune_files) {
+    let filter = produce_filter_from_args(args);
+    match pick::pick_line_from_files_uniform(fortune_files, filter) {
+        // Add a way to handle len
         Ok(fortune_result) => {
             if args.cookie {
                 println!("({})\n%", fortune_result.file_path);
@@ -88,8 +114,8 @@ pub fn handle_multiplie_files_arg(args: &Args, files: &str) {
             exit(1);
         }
     };
-
-    let fortune_result = pick::pick_line_from_file_contributions(fortune_files);
+    let filter = produce_filter_from_args(args);
+    let fortune_result = pick::pick_line_from_file_contributions(fortune_files, filter); // Add a way to handle len
     if args.cookie {
         println!("({})\n%", fortune_result.file_path);
     }
