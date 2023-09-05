@@ -1,4 +1,5 @@
 use std::fs;
+use std::fs::metadata;
 
 use regex::Regex;
 use walkdir::WalkDir;
@@ -7,7 +8,7 @@ use crate::{fortune, percentage};
 
 #[derive(Debug, PartialEq)]
 pub struct FileContribution {
-    pub file_path: String,
+    pub path: String,
     pub percentage: u8,
 }
 
@@ -27,15 +28,55 @@ pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
             if file.metadata().unwrap().is_file() {
                 files.push(file.path().to_str().unwrap().to_owned());
             }
+
+            if file.metadata().unwrap().is_dir() {
+                files.extend(expand_folder_into_files(file.path().to_str().unwrap()));
+            }
         }
     }
     files
 }
-pub fn get_fortunes_from_file(file_path: &str) -> Result<Vec<FortuneResult>, String> {
-    let file_contents = fs::read_to_string(file_path);
-    match file_contents {
-        Ok(x) => Ok(fortune::parse_fortune_string(&x, &file_path)),
-        Err(_) => Err(format!("File not found: {}", file_path)),
+
+pub fn expand_folder_into_files(folder: &str) -> Vec<String> {
+    let mut files: Vec<String> = Vec::new();
+    for file in WalkDir::new(folder)
+        .into_iter()
+        .filter_map(|file| file.ok())
+    {
+        if file.metadata().unwrap().is_file() {
+            files.push(file.path().to_str().unwrap().to_owned());
+        }
+    }
+    files
+}
+
+pub fn get_fortunes_from(path: &str) -> Result<Vec<FortuneResult>, String> {
+    // check if the path is a folder: if true: get all the files in the folder and pick a fortune
+    // from one of them
+    let metadata = metadata(path);
+    if metadata.is_err() {
+        return Err(format!("File not found: {}", path));
+    }
+    let metadata = metadata.unwrap();
+    if metadata.is_dir() {
+        let files = get_fortune_files(&[path]);
+        let mut fortunes: Vec<FortuneResult> = Vec::new();
+        for file in files {
+            let file_fortunes = get_fortunes_from(&file);
+            match file_fortunes {
+                Ok(x) => fortunes.extend(x),
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+        return Ok(fortunes);
+    } else {
+        let file_contents = fs::read_to_string(path);
+        match file_contents {
+            Ok(x) => Ok(fortune::parse_fortune_string(&x, &path)),
+            Err(_) => Err(format!("Error: could not read file {}", path)),
+        }
     }
 }
 
@@ -45,8 +86,22 @@ pub fn file_args_to_file_contribution(args: &str) -> Result<Vec<FileContribution
     re.captures_iter(&args).for_each(|cap| {
         let mut cur_struct = FileContribution {
             percentage: 0,
-            file_path: cap.get(2).unwrap().as_str().to_owned(),
+            path: cap.get(2).unwrap().as_str().to_owned(),
         };
+        let path_metadata = metadata(&cur_struct.path);
+        if path_metadata.is_err() {
+            for folder in crate::conf::DEFAULT_FOLDERS.iter() {
+                let path = format!("{}/{}", folder, &cur_struct.path);
+                let path_metadata = metadata(&path);
+                if path_metadata.is_err() {
+                    continue;
+                }
+                if path_metadata.is_ok() {
+                    cur_struct.path = path;
+                    break;
+                }
+            }
+        }
         cur_struct.percentage = match cap.get(1) {
             Some(x) => {
                 let x = x.as_str().trim().replace("%", "");
@@ -72,11 +127,11 @@ mod tests {
         let args = "50% f1 50% f2";
         let predicted_result = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 50u8,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 50u8,
             },
         ];
@@ -92,11 +147,11 @@ mod tests {
 
         let predicted_result = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 50u8,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 50u8,
             },
         ];
@@ -112,11 +167,11 @@ mod tests {
 
         let predicted_result = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 75u8,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 25u8,
             },
         ];
@@ -132,15 +187,15 @@ mod tests {
 
         let predicted_result = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 33u8,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 33u8,
             },
             FileContribution {
-                file_path: "f3".to_owned(),
+                path: "f3".to_owned(),
                 percentage: 34u8,
             },
         ];

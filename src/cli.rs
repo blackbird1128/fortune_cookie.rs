@@ -1,3 +1,5 @@
+use crate::conf::DEFAULT_FOLDERS;
+use crate::conf::OFFENSIVE_FOLDERS;
 use crate::file_utils;
 use crate::file_utils::FortuneResult;
 use crate::fortune;
@@ -9,8 +11,6 @@ use crate::Args;
 use regex::Regex;
 use std::path::Path;
 use std::process::exit;
-
-pub const DEFAULT_FOLDERS: [&str; 1] = ["./fortunes/"];
 
 fn check_fortunes_folders_exist(paths: &[&str]) {
     for path in paths {
@@ -61,8 +61,9 @@ pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
     if args.pattern.is_some() {
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
         let pattern = args.pattern.as_ref().unwrap().to_string();
-        let lines = pick::pick_all_from_files(fortune_files).unwrap_or_else(|_| {
-            println!("Error: no fortune files found");
+        println!("fortune_files: {:?}", fortune_files);
+        let lines = pick::pick_all_from_files(fortune_files).unwrap_or_else(|e| {
+            println!("{}", e);
             exit(1);
         });
         let re = Regex::new(&pattern).unwrap_or_else(|_| {
@@ -85,7 +86,6 @@ pub fn handle_zero_file_arg(args: &Args) {
     let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
     let filter = produce_filter_from_args(args);
     match pick::pick_line_from_files_uniform(fortune_files, filter) {
-        // Add a way to handle len
         Ok(fortune_result) => {
             if args.cookie {
                 println!("({})\n%", fortune_result.file_path);

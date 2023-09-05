@@ -44,11 +44,11 @@ mod tests {
     fn test_fill_contributions1() {
         let mut contributions = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 0,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 0,
             },
         ];
@@ -62,15 +62,15 @@ mod tests {
     fn test_fill_contributions2() {
         let mut contributions = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 0,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 0,
             },
             FileContribution {
-                file_path: "f3".to_owned(),
+                path: "f3".to_owned(),
                 percentage: 0,
             },
         ];
@@ -85,11 +85,11 @@ mod tests {
     fn test_fill_contributions3() {
         let mut contributions = vec![
             FileContribution {
-                file_path: "f1".to_owned(),
+                path: "f1".to_owned(),
                 percentage: 0,
             },
             FileContribution {
-                file_path: "f2".to_owned(),
+                path: "f2".to_owned(),
                 percentage: 98,
             },
         ];

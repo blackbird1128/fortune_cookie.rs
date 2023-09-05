@@ -39,10 +39,10 @@ pub fn filter_fortunes(fortunes: Vec<FortuneResult>, filter: FortuneFilter) -> V
 pub fn pick_all_from_files(files: Vec<String>) -> Result<Vec<FortuneResult>, String> {
     let mut fortunes = Vec::new();
     for file in &files {
-        match file_utils::get_fortunes_from_file(&file) {
+        match file_utils::get_fortunes_from(&file) {
             Ok(e) => fortunes.extend(e),
             Err(error) => {
-                return Err(error);
+                continue;
             }
         }
     }
@@ -55,7 +55,7 @@ pub fn pick_line_from_files_uniform(
 ) -> Result<FortuneResult, String> {
     let mut fortunes = Vec::new();
     for file in &files {
-        match file_utils::get_fortunes_from_file(&file) {
+        match file_utils::get_fortunes_from(&file) {
             Ok(e) => fortunes.extend(e),
             Err(error) => {
                 return Err(error);
@@ -87,7 +87,7 @@ pub fn pick_line_from_file_contributions(
         }
     }
     let pick = pick_array[fastrand::usize(0..100)];
-    let fortunes = file_utils::get_fortunes_from_file(&contributions[pick as usize].file_path);
+    let fortunes = file_utils::get_fortunes_from(&contributions[pick as usize].path);
     let fortunes = fortunes.unwrap_or_else(|_| {
         println!("Error: no fortune files found");
         exit(1);

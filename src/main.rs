@@ -1,4 +1,5 @@
 mod cli;
+mod conf;
 mod file_utils;
 mod fortune;
 mod percentage;
