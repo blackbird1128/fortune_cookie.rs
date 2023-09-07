@@ -9,6 +9,7 @@ pub struct FortuneFilter {
 }
 
 pub enum FilterFile {
+    Default,
     All,
     Offensive,
 }
@@ -29,8 +30,9 @@ pub fn filter_fortunes(fortunes: Vec<FortuneResult>, filter: FortuneFilter) -> V
             }
         })
         .filter(|x| match filter.file {
+            FilterFile::Default => !x.file_path.contains("off"),
             FilterFile::All => true,
-            FilterFile::Offensive => !x.fortune.contains("offensive"),
+            FilterFile::Offensive => x.file_path.contains("off"),
         })
         .map(|x| x.clone())
         .collect()

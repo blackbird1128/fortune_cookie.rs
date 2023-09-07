@@ -32,10 +32,13 @@ pub fn handle_file_arg(args: &Args) {
 
 pub fn produce_filter_from_args(args: &Args) -> FortuneFilter {
     let mut filter = FortuneFilter {
-        file: FilterFile::All,
+        file: FilterFile::Default,
         len: FilterLen::Short,
         len_value: 160,
     };
+    if args.all {
+        filter.file = FilterFile::All;
+    }
     if args.offensive {
         filter.file = FilterFile::Offensive;
     }

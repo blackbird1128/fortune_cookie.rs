@@ -1,6 +1,6 @@
+use std::fs;
 use std::fs::metadata;
 use std::process::exit;
-use std::{default, fs};
 
 use regex::Regex;
 use walkdir::WalkDir;
