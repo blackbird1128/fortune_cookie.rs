@@ -1,5 +1,4 @@
 use crate::conf::DEFAULT_FOLDERS;
-use crate::conf::OFFENSIVE_FOLDERS;
 use crate::file_utils;
 use crate::file_utils::FortuneResult;
 use crate::fortune;

@@ -41,7 +41,8 @@ pub fn pick_all_from_files(files: Vec<String>) -> Result<Vec<FortuneResult>, Str
     for file in &files {
         match file_utils::get_fortunes_from(&file) {
             Ok(e) => fortunes.extend(e),
-            Err(error) => {
+            Err(_) => {
+                // When a file is erroring, we just skip it
                 continue;
             }
         }
@@ -58,12 +59,12 @@ pub fn pick_line_from_files_uniform(
         match file_utils::get_fortunes_from(&file) {
             Ok(e) => fortunes.extend(e),
             Err(error) => {
-                return Err(error);
+                continue;
             }
         }
     }
     if files.len() == 0 {
-        return Err(String::from("No fortune files found"));
+        return Err(String::from("No fortune files with these names found"));
     }
     let fortunes = filter_fortunes(fortunes, filter);
     if fortunes.len() == 0 {
@@ -88,8 +89,8 @@ pub fn pick_line_from_file_contributions(
     }
     let pick = pick_array[fastrand::usize(0..100)];
     let fortunes = file_utils::get_fortunes_from(&contributions[pick as usize].path);
-    let fortunes = fortunes.unwrap_or_else(|_| {
-        println!("Error: no fortune files found");
+    let fortunes = fortunes.unwrap_or_else(|e| {
+        println!("Error: {e} ");
         exit(1);
     });
     let fortunes = filter_fortunes(fortunes, filter);
