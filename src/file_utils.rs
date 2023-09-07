@@ -1,5 +1,6 @@
-use std::fs;
 use std::fs::metadata;
+use std::process::exit;
+use std::{default, fs};
 
 use regex::Regex;
 use walkdir::WalkDir;
@@ -25,11 +26,15 @@ pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
             .into_iter()
             .filter_map(|file| file.ok())
         {
-            if file.metadata().unwrap().is_file() {
+            let metadata = file.metadata().unwrap_or_else(|e| {
+                eprintln!("Error: could not get metadata for file: {}", e);
+                exit(1);
+            });
+            if metadata.is_file() {
                 files.push(file.path().to_str().unwrap().to_owned());
             }
 
-            if file.metadata().unwrap().is_dir() {
+            if metadata.is_dir() {
                 files.extend(expand_folder_into_files(file.path().to_str().unwrap()));
             }
         }
@@ -43,7 +48,11 @@ pub fn expand_folder_into_files(folder: &str) -> Vec<String> {
         .into_iter()
         .filter_map(|file| file.ok())
     {
-        if file.metadata().unwrap().is_file() {
+        let metadata = file.metadata().unwrap_or_else(|e| {
+            eprintln!("Error: could not get metadata for file: {}", e);
+            exit(1);
+        });
+        if metadata.is_file() {
             files.push(file.path().to_str().unwrap().to_owned());
         }
     }
@@ -73,9 +82,10 @@ pub fn get_fortunes_from(path: &str) -> Result<Vec<FortuneResult>, String> {
         return Ok(fortunes);
     } else {
         let file_contents = fs::read_to_string(path);
-        match file_contents {
-            Ok(x) => Ok(fortune::parse_fortune_string(&x, &path)),
-            Err(_) => Err(format!("Error: could not read file {}", path)),
+        if let Ok(x) = file_contents {
+            Ok(fortune::parse_fortune_string(&x, &path))
+        } else {
+            Err(format!("Error: could not read file {}", path))
         }
     }
 }
@@ -111,9 +121,8 @@ pub fn file_args_to_file_contribution(args: &str) -> Result<Vec<FileContribution
         };
         file_structs.push(cur_struct);
     });
-    match percentage::fill_contributions(&mut file_structs) {
-        Ok(_) => {}
-        Err(x) => return Err(x),
+    if let Err(x) = percentage::fill_contributions(&mut file_structs) {
+        return Err(x);
     }
     Ok(file_structs)
 }

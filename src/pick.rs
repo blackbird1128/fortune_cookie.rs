@@ -39,12 +39,10 @@ pub fn filter_fortunes(fortunes: Vec<FortuneResult>, filter: FortuneFilter) -> V
 pub fn pick_all_from_files(files: Vec<String>) -> Result<Vec<FortuneResult>, String> {
     let mut fortunes = Vec::new();
     for file in &files {
-        match file_utils::get_fortunes_from(&file) {
-            Ok(e) => fortunes.extend(e),
-            Err(_) => {
-                // When a file is erroring, we just skip it
-                continue;
-            }
+        if let Ok(e) = file_utils::get_fortunes_from(&file) {
+            fortunes.extend(e)
+        } else {
+            continue;
         }
     }
     Ok(fortunes)
@@ -56,11 +54,10 @@ pub fn pick_line_from_files_uniform(
 ) -> Result<FortuneResult, String> {
     let mut fortunes = Vec::new();
     for file in &files {
-        match file_utils::get_fortunes_from(&file) {
-            Ok(e) => fortunes.extend(e),
-            Err(error) => {
-                continue;
-            }
+        if let Ok(e) = file_utils::get_fortunes_from(&file) {
+            fortunes.extend(e)
+        } else {
+            continue;
         }
     }
     if files.len() == 0 {
@@ -90,13 +87,15 @@ pub fn pick_line_from_file_contributions(
     let pick = pick_array[fastrand::usize(0..100)];
     let fortunes = file_utils::get_fortunes_from(&contributions[pick as usize].path);
     let fortunes = fortunes.unwrap_or_else(|e| {
-        println!("Error: {e} ");
+        eprintln!("Error: {e} ");
         exit(1);
     });
     let fortunes = filter_fortunes(fortunes, filter);
     if fortunes.len() == 0 {
-        println!("Error: no fortunes satisfying filter(s) found");
-        exit(1);
+        eprintln!("Error: no fortunes satisfying filter(s) found");
+        {
+            exit(1);
+        };
     }
     // TODO add fortune len option
     return fortunes[fastrand::usize(0..fortunes.len())].clone();

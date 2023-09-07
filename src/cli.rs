@@ -82,8 +82,8 @@ pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
 
 pub fn handle_zero_file_arg(args: &Args) {
     check_fortunes_folders_exist(&DEFAULT_FOLDERS);
-    let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
     let filter = produce_filter_from_args(args);
+    let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
     match pick::pick_line_from_files_uniform(fortune_files, filter) {
         Ok(fortune_result) => {
             if args.cookie {
