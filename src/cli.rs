@@ -57,19 +57,18 @@ pub fn produce_filter_from_args(args: &Args) -> FortuneFilter {
 pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
     if args.ignore && !args.pattern.is_some() {
         // -i without -m
-        println!("The -i option can only be used with -m");
+        eprintln!("The -i option can only be used with -m");
         exit(1);
     }
     if args.pattern.is_some() {
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
         let pattern = args.pattern.as_ref().unwrap().to_string();
-        println!("fortune_files: {:?}", fortune_files);
         let lines = pick::pick_all_from_files(fortune_files).unwrap_or_else(|e| {
-            println!("{}", e);
+            eprintln!("{}", e);
             exit(1);
         });
         let re = Regex::new(&pattern).unwrap_or_else(|_| {
-            println!("Error: invalid regex");
+            eprintln!("Error: invalid regex");
             exit(1);
         });
         let mut fortunes = Vec::new();
@@ -96,7 +95,7 @@ pub fn handle_zero_file_arg(args: &Args) {
             exit(0);
         }
         Err(error) => {
-            println!("Error: {}", error);
+            eprintln!("Error: {}", error);
             exit(1);
         }
     }
@@ -105,14 +104,14 @@ pub fn handle_zero_file_arg(args: &Args) {
 pub fn handle_multiplie_files_arg(args: &Args, files: &str) {
     let re = Regex::new(r"(\d\d?%?\s)?(\S+)+").expect("Error: invalid regex");
     if !re.is_match(&files) {
-        println!("Error: files path must respect this format: [[n%] file/dir/all]");
+        eprintln!("Error: files path must respect this format: [[n%] file/dir/all]");
         exit(1);
     }
 
     let fortune_files = match file_utils::file_args_to_file_contribution(&files) {
         Ok(x) => x,
         Err(x) => {
-            println!("Error: {}", x);
+            eprintln!("Error: {}", x);
             exit(1);
         }
     };

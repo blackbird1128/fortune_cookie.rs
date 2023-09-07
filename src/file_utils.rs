@@ -31,11 +31,20 @@ pub fn get_fortune_files(vec_folders: &[&str]) -> Vec<String> {
                 exit(1);
             });
             if metadata.is_file() {
-                files.push(file.path().to_str().unwrap().to_owned());
+                let file_path = file.path().to_str().unwrap_or_else(|| {
+                    eprintln!("Error converting file path (invalid utf-8)");
+                    exit(1);
+                });
+                let file_path = file_path.to_owned();
+                if !files.contains(&file_path) {
+                    files.push(file_path);
+                }
+                continue;
             }
 
             if metadata.is_dir() {
                 files.extend(expand_folder_into_files(file.path().to_str().unwrap()));
+                continue;
             }
         }
     }
@@ -100,6 +109,7 @@ pub fn file_args_to_file_contribution(args: &str) -> Result<Vec<FileContribution
         };
         let path_metadata = metadata(&cur_struct.path);
         if path_metadata.is_err() {
+            // if the path doesnt exist, we try appending it to the default paths
             for folder in crate::conf::DEFAULT_FOLDERS.iter() {
                 let path = format!("{}/{}", folder, &cur_struct.path);
                 let path_metadata = metadata(&path);

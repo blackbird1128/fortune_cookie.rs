@@ -95,10 +95,7 @@ pub fn pick_line_from_file_contributions(
     let fortunes = filter_fortunes(fortunes, filter);
     if fortunes.len() == 0 {
         eprintln!("Error: no fortunes satisfying filter(s) found");
-        {
-            exit(1);
-        };
+        exit(1);
     }
-    // TODO add fortune len option
     return fortunes[fastrand::usize(0..fortunes.len())].clone();
 }
