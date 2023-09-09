@@ -18,6 +18,9 @@ pub struct Args {
     #[arg(short, long)]
     cookie: bool,
 
+    #[arg(long)]
+    checkhealth: bool,
+
     #[arg(short, long)]
     equal: bool,
 
@@ -51,7 +54,7 @@ pub struct Args {
 
 fn main() {
     let args = Args::parse();
-
+    cli::handle_check_health(&args);
     cli::handle_file_arg(&args);
     let pattern_result = cli::handle_pattern_arg(&args);
     if pattern_result.is_some() {

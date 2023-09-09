@@ -14,9 +14,43 @@ use std::process::exit;
 fn check_fortunes_folders_exist(paths: &[&str]) {
     for path in paths {
         if !Path::new(path).exists() {
-            println!("Error: folder {} does not exist (default folder)", path);
-            exit(1);
+            if path == &DEFAULT_FOLDERS[0] {
+                eprintln!("Error: folder {} does not exist", path);
+                eprintln!("Did you install with make install ?");
+                exit(1);
+            }
         }
+    }
+}
+
+fn check_health() {
+    let mut error_count = 0;
+    for path in &DEFAULT_FOLDERS {
+        if !Path::new(path).exists() {
+            if path == &DEFAULT_FOLDERS[0] {
+                eprintln!("Warning: folder {} does not exist", path);
+                eprintln!("Did you install with make install ?");
+                error_count += 1;
+            }
+            if path == &DEFAULT_FOLDERS[1] {
+                eprintln!(
+                    "Warning: folder {} does not exist (fortune default fortunes not available)",
+                    path
+                );
+                eprintln!("You can install them with: sudo apt install fortune-mod");
+                error_count += 1;
+            }
+        }
+    }
+    if error_count == 0 {
+        println!("Check health: OK");
+    }
+}
+
+pub fn handle_check_health(args: &Args) {
+    if args.checkhealth {
+        check_health();
+        exit(0);
     }
 }
 
@@ -62,7 +96,10 @@ pub fn handle_pattern_arg(args: &Args) -> Option<Vec<FortuneResult>> {
     }
     if args.pattern.is_some() {
         let fortune_files = file_utils::get_fortune_files(&DEFAULT_FOLDERS);
-        let pattern = args.pattern.as_ref().unwrap().to_string();
+        let mut pattern = args.pattern.as_ref().unwrap().to_string();
+        if args.ignore {
+            pattern = format!("(?i){}", pattern);
+        }
         let lines = pick::pick_all_from_files(fortune_files).unwrap_or_else(|e| {
             eprintln!("{}", e);
             exit(1);
