@@ -24,4 +24,6 @@ cargo build --release
 ```
 and running the binary in `./target/release/`
 
+Or you can run `make install` and install the tool as `fortune-cookie`
+This tool work by default with the fortune database and it's own datasource it will copy using make installs
 
